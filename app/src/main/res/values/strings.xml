@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">AstroFlix</string>
+    <string name="search">Search for movies</string>
+    <string name="highlight_title">Highlights</string>
+    <string name="favorite_title1">Favorite</string>
+    <string name="favorite_title2">Movies</string>
+    <string name="streaming_availability">Streaming Availability:</string>
+
+</resources>

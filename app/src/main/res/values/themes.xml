@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+
+
+
+    <style name="Theme.SplashScreenj" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/black</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/logo_splash</item>
+        <item name="postSplashScreenTheme">@style/Theme.AstroFlix</item>
+
+    </style>
+
+    <style name="Theme.AstroFlix" parent="android:Theme.Material.Light.NoActionBar" />
+</resources>
