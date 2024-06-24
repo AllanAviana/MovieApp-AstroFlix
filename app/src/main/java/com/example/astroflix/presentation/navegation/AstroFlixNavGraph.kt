@@ -7,8 +7,10 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.astroflix.model.Movie
-import com.example.astroflix.presentation.viewModel.FavoriteViewModel
-import com.example.astroflix.presentation.viewModel.HomeViewModel
+import com.example.astroflix.presentation.ViewModel.FavoriteViewModel
+import com.example.astroflix.presentation.ViewModel.HomeViewModel
+import com.example.astroflix.presentation.screens.FavoriteScreen
+import com.example.astroflix.presentation.screens.Highlights
 import com.example.astroflix.presentation.screens.HomeScreen
 import com.example.astroflix.presentation.screens.detailsScreen
 import com.google.gson.Gson
@@ -25,6 +27,7 @@ fun AstroFlixNavGraph(
     val mainCardMovie by viewModel.mainCardMovie.collectAsState()
     val favoriteMovies by  viewModelFavorite.favoriteMovies.collectAsState()
 
+
     NavHost(
         navController = navController,
         startDestination = AstroflixRoutes.FirstScreen.route
@@ -35,7 +38,8 @@ fun AstroFlixNavGraph(
                 navController = navController,
                 moviesByGenre = moviesByGenre,
                 mainCardImageUrl = mainCardMovie,
-                viewModel = viewModel
+                viewModel = viewModel,
+
             )
         }
         composable("${AstroflixRoutes.SecondScreen.route}/{movieJson}") { backStackEntry ->
@@ -43,8 +47,14 @@ fun AstroFlixNavGraph(
             movieJson?.let {
                 val decodedMovieJson = URLDecoder.decode(it, StandardCharsets.UTF_8.toString())
                 val movie = Gson().fromJson(decodedMovieJson, Movie::class.java)
-                detailsScreen(movie = movie, navController = navController, viewModelFavorite = viewModelFavorite)
+                detailsScreen(movie = movie, navController = navController, viewModelFavorite = viewModelFavorite, viewModel = viewModel)
             }
+        }
+        composable(AstroflixRoutes.ThirdScreen.route) {
+             FavoriteScreen(favoriteMovies = favoriteMovies)
+        }
+        composable(AstroflixRoutes.FourthScreen.route) {
+            Highlights()
         }
     }
 }
@@ -52,5 +62,6 @@ fun AstroFlixNavGraph(
 enum class AstroflixRoutes(val route: String) {
     FirstScreen("first_screen"),
     SecondScreen("second_screen"),
-    ThirdScreen("third_screen")
+    ThirdScreen("third_screen"),
+    FourthScreen("fourth_screen")
 }
