@@ -6,16 +6,16 @@ data class MovieResponse(
 
 data class Movie(
     val id: Int,
-    val title: String,
-    val overview: String,
-    val poster_path: String,
+    val title: String?,
+    val overview: String?,
+    val poster_path: String?,
     val backdrop_path: String?,
     val release_date: String,
     val vote_average: Float,
     val vote_count: Int,
     val genre_ids: List<Int>,
-    val original_language: String,
-    val original_title: String,
+    val original_language: String?,
+    val original_title: String?,
     val popularity: Float,
     val video: Boolean,
     val adult: Boolean
