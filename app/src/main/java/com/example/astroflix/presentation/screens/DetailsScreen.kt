@@ -32,7 +32,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -43,8 +42,9 @@ import coil.compose.rememberAsyncImagePainter
 import com.example.astroflix.Data.Genres
 import com.example.astroflix.model.Movie
 import com.example.astroflix.R
-import com.example.astroflix.presentation.viewModel.FavoriteViewModel
+import com.example.astroflix.presentation.ViewModel.FavoriteViewModel
 import com.example.astroflix.presentation.navegation.AstroflixRoutes
+import com.example.astroflix.presentation.ViewModel.HomeViewModel
 import com.example.astroflix.ui.theme.AstroFlixTypography
 import com.example.astroflix.ui.theme.borderColor
 import com.example.astroflix.ui.theme.lightGray
@@ -53,7 +53,8 @@ import com.example.astroflix.ui.theme.lightGray
 fun detailsScreen(
     navController: NavController,
     movie: Movie,
-    viewModelFavorite: FavoriteViewModel
+    viewModelFavorite: FavoriteViewModel,
+    viewModel: HomeViewModel
 ) {
     LazyColumn(
         modifier = Modifier
@@ -63,7 +64,7 @@ fun detailsScreen(
                     colors = listOf(Color.Gray, Color.Black)
                 )
             )
-            .padding(top= 16.dp, start = 8.dp, end = 8.dp)
+            .padding(top = 16.dp, start = 8.dp, end = 8.dp)
     ) {
         item {
             imageDetails(navController, movie)
@@ -73,7 +74,7 @@ fun detailsScreen(
         }
         item {
             Box {
-                StreamingAvailability()
+                StreamingAvailability(viewModel)
                 FavoriteButton(viewModelFavorite, movie)
             }
         }
@@ -139,10 +140,12 @@ fun body(movie: Movie) {
             horizontalArrangement = Arrangement.Center
 
         ) {
-            Text(
-                text = movie.title,
-                style = AstroFlixTypography.labelMedium,
-            )
+            movie.title?.let {
+                Text(
+                    text = it,
+                    style = AstroFlixTypography.labelMedium,
+                )
+            }
 
         }
         Spacer(modifier = Modifier.height(8.dp))
@@ -157,11 +160,13 @@ fun body(movie: Movie) {
         Spacer(modifier = Modifier.height(8.dp))
 
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
-            Text(
-                text =movie.release_date,
-                style = AstroFlixTypography.bodySmall,
-                modifier = Modifier.padding(start = 8.dp)
-            )
+
+                Text(
+                    text = movie.release_date,
+                    style = AstroFlixTypography.bodySmall,
+                    modifier = Modifier.padding(start = 8.dp)
+                )
+
             Text(
                 text = "Total votes: ${movie.vote_count}",
                 style = AstroFlixTypography.bodySmall,
@@ -210,13 +215,16 @@ fun body(movie: Movie) {
 
 }
 @Composable
-fun StreamingAvailability() {
-    val listImages = listOf(R.drawable.netflix, R.drawable.amazon)
+fun StreamingAvailability(viewModel: HomeViewModel) {
+    val image = viewModel.getPlatforms()
+
     Spacer(modifier = Modifier.height(16.dp))
 
-    Row(modifier = Modifier
-        .wrapContentSize()
-        .padding(vertical = 16.dp)) {
+    Row(
+        modifier = Modifier
+            .wrapContentSize()
+            .padding(vertical = 16.dp)
+    ) {
         Text(
             text = stringResource(R.string.streaming_availability),
             style = AstroFlixTypography.bodySmall,
@@ -224,23 +232,23 @@ fun StreamingAvailability() {
             textAlign = TextAlign.Start
         )
 
-
-
         Row(modifier = Modifier.wrapContentSize()) {
-            listImages.forEach { imageResId ->
-                val image: Painter = painterResource(id = imageResId)
-                Image(
-                    painter = image,
+
+            Image(
+                    painter = rememberAsyncImagePainter(model = "https://image.tmdb.org/t/p/w500${image}"),
                     contentDescription = "Streaming Service Logo",
                     modifier = Modifier
+
                         .size(32.dp)
                         .offset(x = 3.dp, y = -6.dp)
-                        .padding(horizontal = 4.dp)
+                        .padding(horizontal = 4.dp),
                 )
-            }
+
         }
     }
 }
+
+
 
 @Composable
 fun FavoriteButton(viewModelFavorite: FavoriteViewModel, movie: Movie){
@@ -281,12 +289,6 @@ fun FavoriteButton(viewModelFavorite: FavoriteViewModel, movie: Movie){
 
             }
 
-
-
-
-
     }
-
-
 
 }
