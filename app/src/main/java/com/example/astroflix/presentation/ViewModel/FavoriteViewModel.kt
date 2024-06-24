@@ -1,4 +1,4 @@
-package com.example.astroflix.presentation.viewModel
+package com.example.astroflix.presentation.ViewModel
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
