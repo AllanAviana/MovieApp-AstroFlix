@@ -1,10 +1,12 @@
-package com.example.astroflix.presentation.viewModel
+package com.example.astroflix.presentation.ViewModel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.astroflix.model.Movie
 import com.example.astroflix.Data.movieService
 import com.example.astroflix.Data.Genres
+import com.example.astroflix.model.CountryWatchProviders
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,29 +17,31 @@ import kotlinx.coroutines.withContext
 
 class HomeViewModel : ViewModel() {
 
-
     private val _moviesByGenre = MutableStateFlow<Map<String, List<Movie>>>(emptyMap())
     val moviesByGenre: StateFlow<Map<String, List<Movie>>> get() = _moviesByGenre.asStateFlow()
 
     private val _mainCardMovie = MutableStateFlow<Movie>(
         Movie(
-        id = 0,
-        title = "",
-        overview = "",
-        poster_path = "",
-        backdrop_path = null,
-        release_date = "",
-        vote_average = 0.0f,
-        vote_count = 0,
-        genre_ids = emptyList(),
-        original_language = "",
-        original_title = "",
-        popularity = 0.0f,
-        video = false,
-        adult = false
-    )
+            id = 0,
+            title = "",
+            overview = "",
+            poster_path = "",
+            backdrop_path = "",
+            release_date = "",
+            vote_average = 0.0f,
+            vote_count = 0,
+            genre_ids = emptyList(),
+            original_language = "",
+            original_title = "",
+            popularity = 0.0f,
+            video = false,
+            adult = false
+        )
     )
     val mainCardMovie: StateFlow<Movie> get() = _mainCardMovie.asStateFlow()
+
+    private val _plataforms = MutableStateFlow<CountryWatchProviders?>(null)
+    val plataforms: StateFlow<CountryWatchProviders?> get() = _plataforms.asStateFlow()
 
     init {
         fetchMovies()
@@ -96,5 +100,24 @@ class HomeViewModel : ViewModel() {
         _moviesByGenre.value = genreMap
     }
 
+    fun platforms(movie: Movie) {
+        viewModelScope.launch {
+            try {
+                val response = movieService.getWatchProviders(movie.id)
+                val providers = response.results["BR"]
+                Log.d("HomeViewModel", "Watch Providers Response: ${response.results}")
+                Log.d("HomeViewModel", "Watch Providers for BR: $providers")
+                _plataforms.value = providers
+            } catch (e: Exception) {
+                Log.e("HomeViewModel", "Error fetching watch providers", e)
+            }
+        }
+    }
 
+    fun getPlatforms(): String? {
+        val platforms = _plataforms.value
+        val logoPath = platforms?.flatrate?.firstOrNull()?.logo_path
+        Log.d("HomeViewModel", "Logo Path: $logoPath") // Log the logo path
+        return logoPath
+    }
 }
