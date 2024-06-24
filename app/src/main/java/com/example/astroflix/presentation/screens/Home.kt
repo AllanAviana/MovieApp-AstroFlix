@@ -1,5 +1,6 @@
 package com.example.astroflix.presentation.screens
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -26,8 +27,9 @@ import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.astroflix.model.Movie
 import com.example.astroflix.R
-import com.example.astroflix.presentation.viewModel.HomeViewModel
+import com.example.astroflix.presentation.ViewModel.HomeViewModel
 import com.example.astroflix.presentation.navegation.AstroflixRoutes
+import com.example.astroflix.presentation.navegation.DesignNavagationBar
 import com.example.astroflix.ui.theme.AstroFlixTypography
 import com.example.astroflix.ui.theme.darkGray
 import com.google.gson.Gson
@@ -35,36 +37,45 @@ import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
 
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun HomeScreen(
     navController: NavController,
     viewModel: HomeViewModel,
     moviesByGenre: Map<String, List<Movie>>,
-    mainCardImageUrl: Movie
+    mainCardImageUrl: Movie,
+
                ) {
 
+    Scaffold(
+        bottomBar = {
+            DesignNavagationBar(navController)
 
-
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                brush = Brush.verticalGradient(
-                    colors = listOf(darkGray, Color.Black)
-                )
-            )
-            .padding(8.dp, top = 48.dp)
+        }
     ) {
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-        ) {
-            item { SearchBar() }
-            item { Spacer(modifier = Modifier.height(16.dp)) }
-            item { MainCard(movie = mainCardImageUrl, navController = navController) }
-            item { Spacer(modifier = Modifier.height(16.dp)) }
 
-            moviesByGenre.forEach { (genre, movies) ->
-                item { GenreSection(genre, movies, navController) }
+
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(darkGray, Color.Black)
+                    )
+                )
+                .padding(8.dp, top = 48.dp)
+        ) {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+            ) {
+                item { SearchBar() }
+                item { Spacer(modifier = Modifier.height(16.dp)) }
+                item { MainCard(movie = mainCardImageUrl, navController = navController) }
+                item { Spacer(modifier = Modifier.height(16.dp)) }
+
+                moviesByGenre.forEach { (genre, movies) ->
+                    item { GenreSection(genre, movies, navController, viewModel) }
+                }
             }
         }
     }
@@ -139,7 +150,7 @@ fun MainCard(movie: Movie, navController: NavController ) {
 
 
 @Composable
-fun GenreSection(genre: String, movies: List<Movie>, navController: NavController) {
+fun GenreSection(genre: String, movies: List<Movie>, navController: NavController, viewModel: HomeViewModel) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -153,20 +164,23 @@ fun GenreSection(genre: String, movies: List<Movie>, navController: NavControlle
         LazyRow(
             modifier = Modifier.fillMaxWidth()
         ) {
-            items(movies) { movie -> Body(movie, navController) }
+            items(movies) { movie -> Body(movie, navController, viewModel ) }
         }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Body(movie: Movie, navController: NavController,) {
+fun Body(movie: Movie, navController: NavController, viewModel: HomeViewModel) {
     val image = "https://image.tmdb.org/t/p/w500${movie.poster_path}"
     val movieJson = Gson().toJson(movie)
     val encodedMovieJson = URLEncoder.encode(movieJson, StandardCharsets.UTF_8.toString())
 
     ElevatedCard(
-        onClick = { /*TODO*/ },
+        onClick = {
+
+
+        },
         modifier = Modifier
             .padding(end = 16.dp)
             .shadow(
@@ -184,7 +198,9 @@ fun Body(movie: Movie, navController: NavController,) {
             modifier = Modifier
                 .size(width = 190.dp, height = 280.dp)
                 .fillMaxSize()
-                .clickable(onClick = {navController.navigate("${AstroflixRoutes.SecondScreen.route}/$encodedMovieJson")})
+                .clickable(onClick = {
+                    navController.navigate("${AstroflixRoutes.SecondScreen.route}/$encodedMovieJson")
+                    viewModel.platforms(movie)})
                 .clip(RoundedCornerShape(8.dp)),
             contentScale = ContentScale.Crop
         )
