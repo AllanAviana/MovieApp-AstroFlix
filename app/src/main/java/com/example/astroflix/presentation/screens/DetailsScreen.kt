@@ -43,14 +43,16 @@ import com.example.astroflix.Data.Genres
 import com.example.astroflix.model.Movie
 import com.example.astroflix.R
 import com.example.astroflix.presentation.ViewModel.FavoriteViewModel
-import com.example.astroflix.presentation.navegation.AstroflixRoutes
+import com.example.astroflix.presentation.navigation.AstroflixRoutes
 import com.example.astroflix.presentation.ViewModel.HomeViewModel
 import com.example.astroflix.ui.theme.AstroFlixTypography
 import com.example.astroflix.ui.theme.borderColor
 import com.example.astroflix.ui.theme.lightGray
+import com.example.astroflix.util.Constants.PaddingMedium
+import com.example.astroflix.util.Constants.PaddingSmall
 
 @Composable
-fun detailsScreen(
+fun DetailsScreen(
     navController: NavController,
     movie: Movie,
     viewModelFavorite: FavoriteViewModel,
@@ -64,13 +66,13 @@ fun detailsScreen(
                     colors = listOf(Color.Gray, Color.Black)
                 )
             )
-            .padding(top = 16.dp, start = 8.dp, end = 8.dp)
+            .padding(top = PaddingMedium, start = PaddingSmall, end = 8.dp)
     ) {
         item {
-            imageDetails(navController, movie)
+            ImageDetails(navController, movie)
         }
         item {
-            body(movie)
+            Body(movie)
         }
         item {
             Box {
@@ -84,7 +86,7 @@ fun detailsScreen(
     }
 }
 @Composable
-fun imageDetails(navController: NavController, movie: Movie){
+fun ImageDetails(navController: NavController, movie: Movie){
     Box(
         modifier = Modifier
             .fillMaxHeight(0.5f)
@@ -94,7 +96,7 @@ fun imageDetails(navController: NavController, movie: Movie){
         val image = "https://image.tmdb.org/t/p/w500${movie.poster_path}"
         Image(
             painter = rememberAsyncImagePainter( image),
-            contentDescription = "Custom Image",
+            contentDescription = null,
             modifier = Modifier
                 .width(407.dp)
                 .height(456.dp)
@@ -110,12 +112,12 @@ fun imageDetails(navController: NavController, movie: Movie){
             modifier = Modifier
                 .size(56.dp)
 
-                .offset(y = 16.dp),
+                .offset(y = PaddingMedium),
             colors = IconButtonDefaults.iconButtonColors(containerColor = Color.White),
         ) {
             Icon(
                 painter = painterResource(id = R.drawable.ic_arrow),
-                contentDescription = "Arrow Icon",
+                contentDescription = null,
                 tint = Color.Black,
                 modifier = Modifier
                     .size(40.dp)
@@ -127,11 +129,11 @@ fun imageDetails(navController: NavController, movie: Movie){
 }
 
 @Composable
-fun body(movie: Movie) {
+fun Body(movie: Movie) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 8.dp, start = 4.dp, end = 4.dp)
+            .padding(top = PaddingSmall, start = 4.dp, end = 4.dp)
     ) {
 
         Row(
@@ -148,23 +150,23 @@ fun body(movie: Movie) {
             }
 
         }
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(PaddingSmall))
 
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(8.dp)
-                .clip(RoundedCornerShape(8.dp))
+                .height(PaddingSmall)
+                .clip(RoundedCornerShape(PaddingSmall))
                 .background(lightGray)
         ) {}
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(PaddingSmall))
 
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
 
                 Text(
                     text = movie.release_date,
                     style = AstroFlixTypography.bodySmall,
-                    modifier = Modifier.padding(start = 8.dp)
+                    modifier = Modifier.padding(start = PaddingSmall)
                 )
 
             Text(
@@ -173,14 +175,14 @@ fun body(movie: Movie) {
                 modifier = Modifier.padding(end = 4.dp)
             )
         }
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(PaddingMedium))
 
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween){
             Text(
                 text = "Gender:  ${Genres.genres[movie.genre_ids[0]]}",
                 style = AstroFlixTypography.bodySmall,
                 modifier = Modifier
-                    .padding(start = 8.dp)
+                    .padding(start = PaddingSmall)
                     .weight(1f)
             )
             Text(
@@ -202,7 +204,7 @@ fun body(movie: Movie) {
                 text = "${movie.overview}",
                 style = AstroFlixTypography.bodyMedium,
                 modifier = Modifier
-                    .padding(start = 8.dp)
+                    .padding(start = PaddingSmall)
                     .weight(1f) ,
                 textAlign = TextAlign.Left
             )
@@ -223,12 +225,12 @@ fun StreamingAvailability(viewModel: HomeViewModel) {
     Row(
         modifier = Modifier
             .wrapContentSize()
-            .padding(vertical = 16.dp)
+            .padding(vertical = PaddingMedium)
     ) {
         Text(
             text = stringResource(R.string.streaming_availability),
             style = AstroFlixTypography.bodySmall,
-            modifier = Modifier.padding(start = 8.dp),
+            modifier = Modifier.padding(start = PaddingSmall),
             textAlign = TextAlign.Start
         )
 
@@ -236,7 +238,7 @@ fun StreamingAvailability(viewModel: HomeViewModel) {
 
             Image(
                     painter = rememberAsyncImagePainter(model = "https://image.tmdb.org/t/p/w500${image}"),
-                    contentDescription = "Streaming Service Logo",
+                    contentDescription = null,
                     modifier = Modifier
 
                         .size(32.dp)
@@ -280,7 +282,7 @@ fun FavoriteButton(viewModelFavorite: FavoriteViewModel, movie: Movie){
 
                 Image(
                     painter = painterResource(id = image),
-                    contentDescription = "Streaming Service Logo",
+                    contentDescription = null,
                     modifier = Modifier
                         .size(32.dp)
 

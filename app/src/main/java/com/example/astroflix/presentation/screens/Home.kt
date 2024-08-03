@@ -28,10 +28,11 @@ import coil.compose.rememberAsyncImagePainter
 import com.example.astroflix.model.Movie
 import com.example.astroflix.R
 import com.example.astroflix.presentation.ViewModel.HomeViewModel
-import com.example.astroflix.presentation.navegation.AstroflixRoutes
-import com.example.astroflix.presentation.navegation.DesignNavagationBar
+import com.example.astroflix.presentation.navigation.AstroflixRoutes
+import com.example.astroflix.presentation.navigation.DesignNavagationBar
 import com.example.astroflix.ui.theme.AstroFlixTypography
 import com.example.astroflix.ui.theme.darkGray
+import com.example.astroflix.util.Constants.PaddingSmall
 import com.google.gson.Gson
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
@@ -44,17 +45,14 @@ fun HomeScreen(
     viewModel: HomeViewModel,
     moviesByGenre: Map<String, List<Movie>>,
     mainCardImageUrl: Movie,
-
-               ) {
-
+    searchQuery: String,
+    filteredMovies: List<Movie>
+) {
     Scaffold(
         bottomBar = {
             DesignNavagationBar(navController)
-
         }
     ) {
-
-
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -63,18 +61,43 @@ fun HomeScreen(
                         colors = listOf(darkGray, Color.Black)
                     )
                 )
-                .padding(8.dp, top = 48.dp)
+                .padding(PaddingSmall, top = 48.dp)
         ) {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
             ) {
-                item { SearchBar() }
-                item { Spacer(modifier = Modifier.height(16.dp)) }
-                item { MainCard(movie = mainCardImageUrl, navController = navController) }
+                item {
+                    SearchBar(
+                        searchQuery = searchQuery,
+                        onSearchQueryChange = viewModel::updateSearchQuery
+                    )
+                }
+                if (filteredMovies.isNotEmpty()) {
+                    items(filteredMovies) { movie ->
+                        SearchOption(
+                            movie = movie,
+                            navController = navController
+                        )
+                    }
+                }
                 item { Spacer(modifier = Modifier.height(16.dp)) }
 
+                item { MainCard(
+                    movie = mainCardImageUrl,
+                    navController = navController,
+                    viewModel
+                ) }
+
+                item { Spacer(
+                    modifier = Modifier.height(16.dp)
+                ) }
+
                 moviesByGenre.forEach { (genre, movies) ->
-                    item { GenreSection(genre, movies, navController, viewModel) }
+                    item { GenreSection(
+                        genre,
+                        movies,
+                        navController,
+                        viewModel) }
                 }
             }
         }
@@ -82,7 +105,10 @@ fun HomeScreen(
 }
 
 @Composable
-fun SearchBar() {
+fun SearchBar(
+    searchQuery: String,
+    onSearchQueryChange: (String) -> Unit,
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -91,21 +117,20 @@ fun SearchBar() {
         horizontalArrangement = Arrangement.Center
     ) {
         OutlinedTextField(
-            value = "",
+            value = searchQuery,
             shape = MaterialTheme.shapes.extraLarge,
             modifier = Modifier
                 .fillMaxWidth(0.95f)
-                .height(52.dp)
-            ,
+                .height(52.dp),
             colors = TextFieldDefaults.colors(
                 unfocusedContainerColor = MaterialTheme.colorScheme.surface,
             ),
-            onValueChange = { },
+            onValueChange = onSearchQueryChange,
             leadingIcon = {
                 val logo: Painter = painterResource(id = R.drawable.logo)
                 Image(
                     painter = logo,
-                    contentDescription = "Logo",
+                    contentDescription = null,
                     modifier = Modifier.size(48.dp),
                     alignment = Alignment.CenterStart
                 )
@@ -115,9 +140,28 @@ fun SearchBar() {
     }
 }
 
+@Composable
+fun SearchOption(
+    movie: Movie,
+    navController: NavController
+) {
+    Text(
+        text = movie.title ?: "No Title",
+        fontSize = 12.sp,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(PaddingSmall)
+            .background(Color.Gray.copy(alpha = 0.2f))
+            .clickable {
+                val movieJson = Gson().toJson(movie)
+                val encodedMovieJson = URLEncoder.encode(movieJson, StandardCharsets.UTF_8.toString())
+                navController.navigate("${AstroflixRoutes.SecondScreen.route}/$encodedMovieJson")
+            }
+    )
+}
 
 @Composable
-fun MainCard(movie: Movie, navController: NavController ) {
+fun MainCard(movie: Movie, navController: NavController, viewModel: HomeViewModel) {
     val image = "https://image.tmdb.org/t/p/w500${movie.poster_path}"
     val movieJson = Gson().toJson(movie)
     val encodedMovieJson = URLEncoder.encode(movieJson, StandardCharsets.UTF_8.toString())
@@ -130,21 +174,22 @@ fun MainCard(movie: Movie, navController: NavController ) {
                 spotColor = Color.Black.copy(alpha = 1f)
             )
 
-            .offset(x = -8.dp, y = -3.dp)
+            .offset(x = -PaddingSmall, y = -3.dp)
             .padding(bottom = 2.dp),
         contentAlignment = Alignment.Center
     ) {
-
-            Image(
+        Image(
                 painter = rememberAsyncImagePainter(image),
-                contentDescription = "main movie",
+                contentDescription = null,
                 modifier = Modifier
                     .fillMaxSize()
                     .size(width = 405.dp, height = 471.dp)
-                    .clickable(onClick = {navController.navigate("${AstroflixRoutes.SecondScreen.route}/$encodedMovieJson")}),
+                    .clickable(onClick = {
+                        navController.navigate("${AstroflixRoutes.SecondScreen.route}/$encodedMovieJson")
+                        viewModel.platforms(movie)}
+                    ),
                 contentScale = ContentScale.Crop
             )
-
     }
 }
 
@@ -154,7 +199,7 @@ fun GenreSection(genre: String, movies: List<Movie>, navController: NavControlle
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp)
+            .padding(vertical = PaddingSmall)
     ) {
         Text(
             text = genre,
@@ -185,7 +230,7 @@ fun Body(movie: Movie, navController: NavController, viewModel: HomeViewModel) {
             .padding(end = 16.dp)
             .shadow(
                 elevation = 2.dp,
-                shape = RoundedCornerShape(8.dp),
+                shape = RoundedCornerShape(PaddingSmall),
                 ambientColor = Color.Black.copy(alpha = 1f),
                 spotColor = Color.Black.copy(alpha = 1f)
             )
@@ -194,14 +239,14 @@ fun Body(movie: Movie, navController: NavController, viewModel: HomeViewModel) {
     ) {
         Image(
             painter = rememberAsyncImagePainter(image),
-            contentDescription = "movie poster",
+            contentDescription = null,
             modifier = Modifier
                 .size(width = 190.dp, height = 280.dp)
                 .fillMaxSize()
                 .clickable(onClick = {
                     navController.navigate("${AstroflixRoutes.SecondScreen.route}/$encodedMovieJson")
                     viewModel.platforms(movie)})
-                .clip(RoundedCornerShape(8.dp)),
+                .clip(RoundedCornerShape(PaddingSmall)),
             contentScale = ContentScale.Crop
         )
     }
