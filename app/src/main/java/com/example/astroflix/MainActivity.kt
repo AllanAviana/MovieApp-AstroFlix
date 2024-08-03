@@ -15,8 +15,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
 
-import com.example.astroflix.presentation.navegation.AstroFlixNavGraph
-import com.example.astroflix.presentation.screens.HomeScreen
+import com.example.astroflix.presentation.navigation.AstroFlixNavGraph
+
 import com.example.astroflix.ui.theme.AstroFlixTheme
 
 
