@@ -1,5 +1,6 @@
 package com.example.astroflix.presentation.ViewModel
 
+
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -7,6 +8,7 @@ import com.example.astroflix.model.Movie
 import com.example.astroflix.Data.movieService
 import com.example.astroflix.Data.Genres
 import com.example.astroflix.model.CountryWatchProviders
+import com.example.astroflix.util.Constants.API_KEY
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,8 +19,17 @@ import kotlinx.coroutines.withContext
 
 class HomeViewModel : ViewModel() {
 
+    private val _movie = MutableStateFlow<List<Movie>>(emptyList())
+    val movie: StateFlow<List<Movie>> get() = _movie.asStateFlow()
+
     private val _moviesByGenre = MutableStateFlow<Map<String, List<Movie>>>(emptyMap())
     val moviesByGenre: StateFlow<Map<String, List<Movie>>> get() = _moviesByGenre.asStateFlow()
+
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> get() = _searchQuery.asStateFlow()
+
+    private val _filteredMovies = MutableStateFlow<List<Movie>>(emptyList())
+    val filteredMovies: StateFlow<List<Movie>> get() = _filteredMovies.asStateFlow()
 
     private val _mainCardMovie = MutableStateFlow<Movie>(
         Movie(
@@ -41,7 +52,10 @@ class HomeViewModel : ViewModel() {
     val mainCardMovie: StateFlow<Movie> get() = _mainCardMovie.asStateFlow()
 
     private val _plataforms = MutableStateFlow<CountryWatchProviders?>(null)
-    val plataforms: StateFlow<CountryWatchProviders?> get() = _plataforms.asStateFlow()
+
+    private val _highlightList = MutableStateFlow<List<Movie>>(emptyList())
+    val highlightList: StateFlow<List<Movie>> get() = _highlightList.asStateFlow()
+
 
     init {
         fetchMovies()
@@ -49,9 +63,11 @@ class HomeViewModel : ViewModel() {
 
     private fun fetchMovies() {
         viewModelScope.launch {
-            val moviesList = fetchMoviesFromApi()
-            updateMainCardMovie(moviesList)
-            groupMoviesByGenre(moviesList)
+            _movie.value = fetchMoviesFromApi()
+            updateMainCardMovie(_movie.value )
+            groupMoviesByGenre(_movie.value )
+            addHighlightList(_movie.value)
+
         }
     }
 
@@ -63,7 +79,7 @@ class HomeViewModel : ViewModel() {
             async {
                 val response = movieService.getMovies(
                     page = page,
-                    authorization = "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIxZjJmYzk2MDcxNTgzYTljNTBjODljMjA3MTMyZmJkMiIsInN1YiI6IjY2NmI4MjI5ZjYyN2NiYzQ4YTc2MWMzYyIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.__ax1wJSoWs2aN3GeQrOcGcWt9gOxMnh_DKxubRbkPE"
+                    authorization = API_KEY
                 )
                 response.results
             }
@@ -105,8 +121,6 @@ class HomeViewModel : ViewModel() {
             try {
                 val response = movieService.getWatchProviders(movie.id)
                 val providers = response.results["BR"]
-                Log.d("HomeViewModel", "Watch Providers Response: ${response.results}")
-                Log.d("HomeViewModel", "Watch Providers for BR: $providers")
                 _plataforms.value = providers
             } catch (e: Exception) {
                 Log.e("HomeViewModel", "Error fetching watch providers", e)
@@ -117,7 +131,32 @@ class HomeViewModel : ViewModel() {
     fun getPlatforms(): String? {
         val platforms = _plataforms.value
         val logoPath = platforms?.flatrate?.firstOrNull()?.logo_path
-        Log.d("HomeViewModel", "Logo Path: $logoPath") // Log the logo path
         return logoPath
     }
+
+    private fun addHighlightList(movie: List<Movie>) {
+        val highlightList = mutableListOf<Movie>()
+        movie.forEach { movie ->
+            if (movie.vote_average >= 7.5 && movie.vote_count >= 100) {
+                highlightList.add(movie)
+            }
+        }
+        _highlightList.value = highlightList
+    }
+    fun updateSearchQuery(query: String) {
+        _searchQuery.value = query
+        filterMovies(query)
+    }
+
+    private fun filterMovies(query: String) {
+        val filteredList = if (query.isBlank()) {
+            emptyList()
+        } else {
+            _movie.value.filter { movie ->
+                movie.title?.contains(query, ignoreCase = true) == true
+            }
+        }
+        _filteredMovies.value = filteredList
+    }
+
 }
