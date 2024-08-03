@@ -1,4 +1,4 @@
-package com.example.astroflix.presentation.navegation
+package com.example.astroflix.presentation.navigation
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
@@ -17,12 +17,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavController
+import androidx.navigation.compose.currentBackStackEntryAsState
 
 data class BottomNavagationItem(
     val title: String,
     val selectedIcon: ImageVector,
     val unselectedIcon: ImageVector
-
 )
 
 val items = listOf(
@@ -41,7 +41,6 @@ val items = listOf(
         selectedIcon = Icons.Filled.Star,
         unselectedIcon = Icons.Outlined.Star
     )
-
 )
 
 @Composable
@@ -50,25 +49,30 @@ fun DesignNavagationBar(navController: NavController) {
         mutableStateOf(0)
     }
 
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
     NavigationBar {
         items.forEachIndexed { index, item ->
-
             NavigationBarItem(
-                selected = selectedItemIndex == index,
+                selected = currentRoute == item.title,
                 onClick = {
                     selectedItemIndex = index
-                    navController.navigate(item.title)
-                          },
-                icon = { Icon(
-                    imageVector = if (selectedItemIndex == index) item.selectedIcon else item.unselectedIcon,
-                    contentDescription = item.title
-                ) })
+                    navController.navigate(item.title) {
+                        popUpTo(navController.graph.startDestinationId) {
+                            saveState = true
+                        }
 
 
+                    }
+                },
+                icon = {
+                    Icon(
+                        imageVector = if (currentRoute == item.title) item.selectedIcon else item.unselectedIcon,
+                        contentDescription = item.title
+                    )
+                }
+            )
         }
-
     }
 }
-
-
-

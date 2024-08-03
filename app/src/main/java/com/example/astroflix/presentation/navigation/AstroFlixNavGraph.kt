@@ -12,7 +12,7 @@ import com.example.astroflix.presentation.ViewModel.HomeViewModel
 import com.example.astroflix.presentation.screens.FavoriteScreen
 import com.example.astroflix.presentation.screens.Highlights
 import com.example.astroflix.presentation.screens.HomeScreen
-import com.example.astroflix.presentation.screens.detailsScreen
+import com.example.astroflix.presentation.screens.DetailsScreen
 import com.google.gson.Gson
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
@@ -26,6 +26,10 @@ fun AstroFlixNavGraph(
     val moviesByGenre by viewModel.moviesByGenre.collectAsState()
     val mainCardMovie by viewModel.mainCardMovie.collectAsState()
     val favoriteMovies by  viewModelFavorite.favoriteMovies.collectAsState()
+    val displayHighlightMovie by viewModel.highlightList.collectAsState()
+    val searchQuery by viewModel.searchQuery.collectAsState()
+    val filteredMovies by viewModel.filteredMovies.collectAsState()
+
 
 
     NavHost(
@@ -39,6 +43,8 @@ fun AstroFlixNavGraph(
                 moviesByGenre = moviesByGenre,
                 mainCardImageUrl = mainCardMovie,
                 viewModel = viewModel,
+                searchQuery = searchQuery,
+                filteredMovies = filteredMovies
 
             )
         }
@@ -47,14 +53,26 @@ fun AstroFlixNavGraph(
             movieJson?.let {
                 val decodedMovieJson = URLDecoder.decode(it, StandardCharsets.UTF_8.toString())
                 val movie = Gson().fromJson(decodedMovieJson, Movie::class.java)
-                detailsScreen(movie = movie, navController = navController, viewModelFavorite = viewModelFavorite, viewModel = viewModel)
+                DetailsScreen(
+                    movie = movie,
+                    navController = navController,
+                    viewModelFavorite = viewModelFavorite,
+                    viewModel = viewModel)
             }
         }
         composable(AstroflixRoutes.ThirdScreen.route) {
-             FavoriteScreen(favoriteMovies = favoriteMovies)
+             FavoriteScreen(
+                 favoriteMovies = favoriteMovies,
+                 favoriteViewModel = viewModelFavorite,
+                 navController = navController)
         }
         composable(AstroflixRoutes.FourthScreen.route) {
-            Highlights()
+           Highlights(
+               navController = navController,
+               displayHighlightMovie = displayHighlightMovie,
+               viewModel = viewModel
+
+           )
         }
     }
 }
