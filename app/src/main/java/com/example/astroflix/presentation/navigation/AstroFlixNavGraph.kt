@@ -1,4 +1,4 @@
-package com.example.astroflix.presentation.navegation
+package com.example.astroflix.presentation.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
